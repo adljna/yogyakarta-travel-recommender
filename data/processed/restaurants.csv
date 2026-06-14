@@ -1,0 +1,6 @@
+restaurant_id,name,cuisine_type,halal_status,city,province,latitude,longitude,opening_hours,price_level,rating,rating_count,rating_source,source,source_urls
+rest_yog_001,Rumah Makan Soto Ayam,Traditional Indonesian,Certified,Yogyakarta,DIY,-7.7956,110.3695,10:00-22:00,1,4.5,850,google,"google_places|osm","https://maps.google.com/"
+rest_yog_002,Warung Pulau Kelapa,Indonesian/Seafood,Certified,Yogyakarta,DIY,-7.7878,110.4008,11:00-23:00,2,4.3,620,google,"google_places","https://maps.google.com/"
+rest_yog_003,Pondok Desa Yogyakarta,Traditional Javanese,Certified,Yogyakarta,DIY,-7.8021,110.3632,09:00-21:00,1,4.6,1200,google,"google_places|osm","https://maps.google.com/"
+rest_yog_004,Kuliner Jogja,Indonesian Fusion,Certified,Yogyakarta,DIY,-7.7945,110.3812,10:00-22:30,2,4.4,950,google,"google_places","https://maps.google.com/"
+rest_yog_005,Nasi Kuning Kampoeng,Traditional Indonesian,Certified,Yogyakarta,DIY,-7.8123,110.3901,10:00-20:00,1,4.2,480,google,"google_places","https://maps.google.com/"

@@ -1,0 +1,6 @@
+from_destination_id,to_destination_id,from_name,to_name,distance_km,duration_minutes_car,duration_minutes_bike,duration_minutes_walking,transport_mode,source,last_updated
+dest_yog_001,dest_yog_002,Borobudur,Prambanan,42.5,45,120,N/A,"car|bike","osrm",2024-06-10
+dest_yog_002,dest_yog_003,Prambanan,Ubud Art Market,68.3,75,180,N/A,"car|bike","osrm",2024-06-10
+dest_yog_003,dest_yog_004,Ubud Art Market,Tegallalang Rice Terraces,15.2,25,60,N/A,"car|bike","osrm",2024-06-10
+dest_yog_004,dest_yog_005,Tegallalang Rice Terraces,Monkey Forest Sanctuary,5.8,12,30,N/A,"car|bike|walking","osrm",2024-06-10
+dest_yog_001,dest_yog_005,Borobudur,Monkey Forest Sanctuary,89.2,95,240,N/A,"car","osrm",2024-06-10

@@ -4,6 +4,8 @@ import re
 from datetime import date, timedelta
 from typing import Any
 
+from datetime import date, timedelta
+
 SKIP_TOKENS = {"", "skip", "tidak tahu", "ga tau", "gak tau", "bingung", "lewat", "-", "n/a"}
 
 
@@ -92,6 +94,73 @@ def _ask_date(prompt: str, default: date) -> str:
                 return date(y, m, d).isoformat()
         except Exception:
             print("  Format tanggal tidak valid, coba lagi (DD/MM/YYYY)")
+
+
+def _apply_defaults(constraints: dict) -> None:
+    """Isi nilai default untuk field yang null atau belum ada."""
+    constraints.setdefault("destination_area", "Yogyakarta")
+    constraints.setdefault("start_location", "pusat kota")
+    constraints.setdefault("end_location", None)
+    constraints.setdefault("avoid_preferences", [])
+    constraints.setdefault("min_rating", 3.5)
+
+    # setdefault tidak override None, jadi cek eksplisit untuk field penting
+    for field, default in [
+        ("budget_level", "medium"),
+        ("daily_budget_idr", 1500000),
+        ("pace", "normal"),
+        ("group_type", "individual"),
+        ("interests", ["Culture", "Culinary"]),
+        ("min_rating", 3.5),
+    ]:
+        if not constraints.get(field):
+            constraints[field] = default
+
+    for field, default in [
+        ("preferred_halal", True),
+        ("good_for_kids", False),
+        ("needs_wheelchair", False),
+        ("include_culinary", True),
+    ]:
+        if constraints.get(field) is None:
+            constraints[field] = default
+
+    # Travel dates: generate dari duration jika belum ada
+    duration = constraints.get("duration_days", 3)
+    td = constraints.get("travel_dates")
+    if not td or not isinstance(td, dict) or not td.get("start_date"):
+        start = date.today() + timedelta(days=7)
+        end = start + timedelta(days=duration - 1)
+        constraints["travel_dates"] = {
+            "start_date": start.isoformat(),
+            "end_date": end.isoformat(),
+        }
+    else:
+        start = date.fromisoformat(td["start_date"])
+        constraints["travel_dates"]["end_date"] = (
+            start + timedelta(days=duration - 1)
+        ).isoformat()
+
+
+def ask_missing_fields(constraints: dict, missing: list) -> dict:
+    """
+    Tanya hanya field yang belum diisi user, lalu apply defaults ke sisanya.
+    Dipanggil setelah ConstraintExtractor.extract() bila ada field kritis yang kosong.
+    """
+    if "duration_days" in missing:
+        while True:
+            raw = input("  Berapa hari rencananya? ").strip()
+            if raw.isdigit() and int(raw) >= 1:
+                constraints["duration_days"] = int(raw)
+                break
+            print("  Masukkan angka minimal 1.")
+
+    if "destination_area" in missing:
+        raw = input("  Mau ke kota mana? (default: Yogyakarta) ").strip()
+        constraints["destination_area"] = raw if raw else "Yogyakarta"
+
+    _apply_defaults(constraints)
+    return constraints
 
 
 def run_questionnaire() -> dict:

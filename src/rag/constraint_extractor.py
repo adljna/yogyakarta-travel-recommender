@@ -130,44 +130,38 @@ CONTOH OUTPUT:
             logger.error(f"Constraint extraction error: {str(e)}")
             raise
     
+    def find_missing_required(self, constraints: Dict[str, Any]) -> list:
+        """
+        Identifikasi field kritis yang belum diisi user.
+        Dipanggil setelah extract() untuk tahu apa yang perlu ditanyakan.
+
+        Returns:
+            List of field names yang perlu ditanya ke user.
+        """
+        missing = []
+
+        duration = constraints.get("duration_days")
+        if not duration or not isinstance(duration, (int, float)) or duration < 1:
+            missing.append("duration_days")
+
+        # destination_area default ke Yogyakarta untuk MVP
+        if not constraints.get("destination_area"):
+            constraints["destination_area"] = "Yogyakarta"
+
+        return missing
+
     @staticmethod
     def _validate_constraints(constraints: Dict[str, Any]) -> bool:
         """
-        Validate extracted constraints.
-        
-        Args:
-            constraints: Constraints dict
-            
-        Returns:
-            bool: True jika valid
-            
-        Raises:
-            ValueError: Jika invalid
+        Validate struktur constraints — hanya cek tipe, bukan kelengkapan.
+        Field yang null/kosong ditangani via find_missing_required + ask_missing_fields.
         """
-        
-        required_fields = [
-            'destination_area',
-            'duration_days',
-            'interests',
-            'travel_dates'
-        ]
-        
-        for field in required_fields:
-            if field not in constraints:
-                raise ValueError(f"Missing required field: {field}")
-        
-        # Validate duration
-        if not isinstance(constraints['duration_days'], int) or constraints['duration_days'] < 1:
-            raise ValueError("duration_days must be positive integer")
-        
-        # Validate interests
-        valid_interests = {'Culture', 'Culinary', 'Nature', 'Beach', 'Adventure', 'Spiritual', 'Shopping'}
-        if not isinstance(constraints['interests'], list):
-            raise ValueError("interests must be list")
-        
-        # Validate dates
-        travel_dates = constraints.get('travel_dates', {})
-        if not isinstance(travel_dates, dict) or 'start_date' not in travel_dates:
-            raise ValueError("travel_dates must have start_date and end_date")
-        
+        interests = constraints.get("interests")
+        if interests is not None and not isinstance(interests, list):
+            constraints["interests"] = []
+
+        travel_dates = constraints.get("travel_dates")
+        if travel_dates is not None and not isinstance(travel_dates, dict):
+            constraints["travel_dates"] = None
+
         return True

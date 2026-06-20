@@ -1,0 +1,107 @@
+================================================================
+FLOW KESELURUHAN SISTEM — Yogyakarta Travel Recommender (Tier 4)
+================================================================
+
+scripts/run.py
+│
+├── [1] Generate Itinerary
+│       │
+│       ├── Input: teks bebas ("3 hari di Yogyakarta, suka budaya...")
+│       │   └── ConstraintExtractor → LLM ekstrak preferensi → dict
+│       │
+│       ├── ATAU: Questionnaire (10 pertanyaan step-by-step)
+│       │
+│       ├── GraphRetriever → Neo4j
+│       │   └── queries.py: cari destinasi + restoran by interest/region
+│       │
+│       └── LLMClient → OpenRouter
+│           └── graph context + constraints → markdown itinerary
+│           Output: output_itinerary.md
+│
+├── [2] Tanya Graph (Text-to-Cypher)  ← BARU (Tier 4)
+│       │
+│       ├── Input: "Mana museum di Yogyakarta rating > 4?"
+│       │
+│       ├── TextToCypherConverter → LLM
+│       │   └── pertanyaan + schema Neo4j → Cypher query
+│       │
+│       ├── Cypher dieksekusi langsung ke Neo4j
+│       │
+│       └── LLM jelaskan hasil dalam Bahasa Indonesia
+│           Output: Cypher + hasil + penjelasan
+│
+└── [3] Tambah Data (LLM Graph Builder)  ← BARU (Tier 4)
+        │
+        ├── Input: teks bebas (artikel blog, review, Wikipedia)
+        │
+        ├── LLMGraphBuilder → LLM
+        │   └── teks → JSON berisi entitas & relasi
+        │
+        ├── Simpan ke Neo4j (MERGE — tidak duplikat)
+        │   ├── Node: Destination, Restaurant, City
+        │   └── Relasi: IS_IN, HAS_CATEGORY, NEAR, RECOMMENDED_WITH
+        │
+        └── Output: ringkasan apa yang tersimpan
+
+
+================================================================
+KENAPA INI MEMENUHI TIER 4
+================================================================
+
+Syarat             | Komponen  | Cara Kerjanya
+-------------------|-----------|-----------------------------------------------
+RAG                | Mode 1    | Neo4j menyediakan konteks → LLM generate
+                   |           | itinerary (bukan dari memory LLM)
+Text-to-Cypher     | Mode 2    | LLM MENULIS Cypher dari pertanyaan NL,
+                   |           | bukan pakai query statis
+LLM Graph Builder  | Mode 3    | LLM MENGISI Neo4j dari teks bebas,
+                   |           | bukan hanya membaca
+
+
+================================================================
+PERBEDAAN MODE 1 vs MODE 2 (penting untuk presentasi)
+================================================================
+
+                    | Mode 1 (Itinerary)          | Mode 2 (Text-to-Cypher)
+--------------------|-----------------------------|--------------------------
+LLM menulis Cypher? | TIDAK — query fix di        | YA — LLM generate Cypher
+                    | queries.py                  | baru tiap pertanyaan
+Output              | Itinerary markdown lengkap  | Jawaban spesifik dari graph
+Contoh input        | "Buatkan jadwal 3 hari..."  | "Museum mana buka Senin?"
+
+
+================================================================
+FILE BARU YANG DITAMBAHKAN (Tier 4)
+================================================================
+
+src/rag/text_to_cypher.py
+  └── Kelas TextToCypherConverter
+      Alur: pertanyaan NL → LLM → Cypher → eksekusi Neo4j → penjelasan NL
+
+src/graph_builder/__init__.py
+src/graph_builder/llm_graph_builder.py
+  └── Kelas LLMGraphBuilder
+      Alur: teks bebas → LLM ekstrak entitas & relasi → simpan Neo4j
+
+scripts/05_text_to_cypher_demo.py
+  └── Demo 5 pertanyaan contoh + mode interaktif
+
+scripts/06_graph_builder_demo.py
+  └── Demo ekstrak 3 artikel wisata Jogja → Neo4j
+
+scripts/run.py  (diupdate)
+  └── Menu 3 mode: Generate Itinerary / Tanya Graph / Tambah Data
+
+
+================================================================
+CARA DEMO SAAT PRESENTASI
+================================================================
+
+# Demo Text-to-Cypher
+python scripts/05_text_to_cypher_demo.py
+
+# Demo LLM Graph Builder
+python scripts/06_graph_builder_demo.py
+
+# Menu lengkap (semua fitur)
+python scripts/run.py

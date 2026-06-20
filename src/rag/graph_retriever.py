@@ -30,7 +30,7 @@ class GraphRetriever:
             interests = constraints.get('interests', [])
             start_date = constraints['travel_dates']['start_date']
             end_date = constraints['travel_dates']['end_date']
-            min_rating = constraints.get('min_rating', 3.5)
+            min_rating = constraints.get('min_rating') or 3.5
             avoid = constraints.get('avoid_preferences', [])
             good_for_kids = constraints.get('good_for_kids', False)
             needs_wheelchair = constraints.get('needs_wheelchair', False)

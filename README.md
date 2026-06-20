@@ -152,9 +152,9 @@ itinerary-recommendation-system/
 - Index optimization
 
 ### Phase 4: RAG Pipeline
-- Constraint extraction (Claude)
+- Constraint extraction (LLM nvidia)
 - Graph retrieval (Neo4j Cypher)
-- Itinerary generation (Claude)
+- Itinerary generation (LLM nvidia)
 
 ## 🎓 Usage Examples
 
@@ -216,16 +216,14 @@ print(response.json())
 ### Data Accuracy
 - Data dari berbagai sources mungkin ada perbedaan
 - Selalu verify sebelum kunjungan
-- Rating disimpan dengan source info (Google vs Tripadvisor)
+- Rating disimpan dengan source info (Google)
 
 ### API Rate Limits
 - Google Places: ~100 req/min
 - Wikidata SPARQL: Bisa handle batch queries
-- Claude API: Respek rate limits di .env
 
 ### Geographic Scope (MVP)
 - MVP fokus pada **Yogyakarta region** saja
-- Expansion ke regions lain di Phase 2
 
 ## 🧪 Testing
 
@@ -266,7 +264,7 @@ docker ps  # Check if container running
 
 ### API Key Not Found
 ```
-Error: ANTHROPIC_API_KEY not found
+Error: API_KEY not found
 ```
 **Solution**: Copy .env.example ke .env dan fill API keys
 ```bash
@@ -286,47 +284,3 @@ FileNotFoundError: data/processed/destinations.csv
 - `docs/DATA_SOURCES.md` - Data source documentation
 - `docs/SETUP.md` - Detailed setup guide
 - `docs/API_DOCUMENTATION.md` - API endpoint documentation
-
-## 🗺️ Roadmap
-
-**Phase 1 (MVP - Week 4)**
-- [x] Data collection pipeline
-- [x] Neo4j graph setup
-- [x] RAG constraint extraction
-- [x] Itinerary generation
-
-**Phase 2 (Q3 2024)**
-- [ ] Multi-region support (Bali, Bandung, Surabaya)
-- [ ] Advanced TSP optimization
-- [ ] Booking integration (Agoda, Tiket.com)
-- [ ] User authentication & history
-
-**Phase 3 (Q4 2024)**
-- [ ] Mobile app
-- [ ] Real-time itinerary adjustment
-- [ ] Social features (share, collaborate)
-- [ ] Personalized ML recommendations
-
-## 👥 Contributing
-
-Contributions welcome! Areas:
-- [ ] More regions dataset
-- [ ] Better optimization algorithms
-- [ ] Test coverage improvement
-- [ ] Documentation enhancement
-
-## 📝 License
-
-MIT License - Silakan gunakan untuk educational & research purposes
-
-## 📧 Contact
-
-Untuk questions atau suggestions:
-- Open GitHub Issue
-- Email: [your-email]
-
----
-
-**Last Updated**: 2024-06-10
-**MVP Status**: Ready for testing
-**Stable Release**: v0.1.0

@@ -42,10 +42,6 @@ yogyakarta-travel-recommender/
 ├── config/
 │   └── settings.py              # Pydantic settings loader dari .env
 ├── data/
-│   ├── raw/                     # Data sumber asli (CSV)
-│   │   ├── osm_pois_yogyakarta.csv
-│   │   ├── wikidata_yogyakarta.csv
-│   │   └── wikipedia_enrichment_yogyakarta.csv
 │   ├── processed/               # CSV yang sudah dibersihkan
 │   │   ├── destinations.csv
 │   │   ├── restaurants.csv

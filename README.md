@@ -1,286 +1,208 @@
-# Sistem Rekomendasi Itinerary Wisata Indonesia - Graph-RAG
+# Yogyakarta Travel Recommender — Graph-RAG
 
-AI-powered travel itinerary recommendation system untuk Indonesia menggunakan Neo4j Graph Database, Graph-RAG architecture, dan Claude LLM.
+Sistem rekomendasi itinerary wisata Yogyakarta berbasis Neo4j Graph Database dan LLM (via OpenRouter), dilengkapi Text-to-Cypher dan LLM Graph Builder.
 
-## 🎯 Overview
+## Fitur
 
-Sistem ini menghasilkan itinerary wisata yang dipersonalisasi berdasarkan:
-- Preferensi user (budget, interests, pace, duration)
-- Data dari multiple sources (Wikidata, OpenStreetMap, Google Places, BMKG)
-- Graph-based retrieval dari Neo4j
-- Natural language explanation dari Claude
+- **Generate Itinerary** — input teks bebas, sistem ekstrak preferensi lalu buat itinerary dari data Neo4j
+- **Text-to-Cypher** — tanya langsung tentang destinasi; LLM tulis Cypher, eksekusi ke Neo4j, jelaskan hasilnya
+- **LLM Graph Builder** — paste teks artikel/blog/review; LLM ekstrak entitas & relasi lalu simpan ke Neo4j
 
-## 🏗️ Arsitektur
+## Arsitektur
 
 ```
 User Input (Natural Language)
-    ↓
-NLP Extraction Layer (Claude - extract constraints)
-    ↓
-Graph-RAG Retrieval (Neo4j - fetch relevant data)
-    ↓
-Itinerary Optimization Layer
-    ↓
-LLM Generation (Claude - generate readable itinerary)
-    ↓
-Output (Markdown itinerary dengan alternatives)
+    │
+    ├── Intent: itinerary ──► ConstraintExtractor (LLM)
+    │                              ↓
+    │                         GraphRetriever (Neo4j)
+    │                              ↓
+    │                         LLMClient (OpenRouter) ──► output_itinerary.md
+    │
+    ├── Intent: graph_query ──► TextToCypherConverter (LLM → Cypher → Neo4j)
+    │                               ↓
+    │                          Jawaban + penjelasan NL
+    │
+    └── Intent: add_data ──► LLMGraphBuilder (LLM ekstrak entitas → Neo4j)
+                                 ↓
+                            Ringkasan node & relasi yang tersimpan
 ```
 
-## 📦 Tech Stack
+## Tech Stack
 
-- **Database**: Neo4j (Graph Database)
-- **Data Processing**: Python, Pandas, GeoPandas
-- **APIs**: 
-  - Wikidata SPARQL
-  - OpenStreetMap Overpass
-  - Google Places API
-  - BMKG Weather API
-  - Anthropic Claude API
-- **Web Framework**: FastAPI (untuk API endpoint)
+- **Database**: Neo4j 5.x (Graph Database)
+- **LLM**: OpenRouter API (model: `openai/gpt-4o-mini`)
+- **Data Processing**: Python, Pandas
+- **Language**: Python 3.10+
 
-## 🚀 Quick Start
+## Struktur Project
+
+```
+yogyakarta-travel-recommender/
+├── config/
+│   └── settings.py              # Pydantic settings loader dari .env
+├── data/
+│   ├── raw/                     # Data sumber asli (CSV)
+│   │   ├── osm_pois_yogyakarta.csv
+│   │   ├── wikidata_yogyakarta.csv
+│   │   └── wikipedia_enrichment_yogyakarta.csv
+│   ├── processed/               # CSV yang sudah dibersihkan
+│   │   ├── destinations.csv
+│   │   ├── restaurants.csv
+│   │   └── destination_connections.csv
+│   ├── neo4j_imports/           # Cypher import scripts & data
+│   │   ├── 01_import_destinations.cypher
+│   │   ├── 02_import_connections.cypher
+│   │   └── *.csv
+│   └── wisata_jogja_clean.csv   # Data sumber utama (Google Maps)
+├── src/
+│   ├── database/
+│   │   ├── neo4j_client.py      # Koneksi Neo4j
+│   │   └── queries.py           # Cypher queries statis
+│   ├── rag/
+│   │   ├── constraint_extractor.py   # Ekstrak preferensi user via LLM
+│   │   ├── graph_retriever.py        # Query Neo4j untuk konteks
+│   │   ├── llm_client.py             # Generate itinerary via OpenRouter
+│   │   ├── questionnaire.py          # Klarifikasi info yang kurang
+│   │   └── text_to_cypher.py         # NL → Cypher via LLM
+│   └── graph_builder/
+│       └── llm_graph_builder.py      # Teks → entitas → Neo4j
+├── scripts/
+│   ├── run.py                        # Entry point utama (conversational)
+│   ├── 01_process_data.py            # Proses CSV mentah → processed/
+│   ├── 02_import_to_neo4j.py        # Import CSV ke Neo4j
+│   ├── 03_generate_itinerary_demo.py
+│   ├── 04_text_to_cypher_demo.py    # Demo Text-to-Cypher
+│   └── 05_graph_builder_demo.py     # Demo LLM Graph Builder
+├── .env.example
+├── requirements.txt
+└── FLOW_TIER4.txt
+```
+
+## Setup
 
 ### Prerequisites
 
 - Python 3.10+
-- Neo4j (Community/Enterprise atau Neo4j Aura)
-- API Keys:
-  - Google Places API
-  - Anthropic Claude API
+- Neo4j (Desktop / Community / Aura) — database name: `itinerary`
+- API Key: OpenRouter
 
-### Setup
+### 1. Clone & virtual environment
 
-1. **Clone dan setup virtual environment**
 ```bash
 git clone <repo>
-cd itinerary-recommendation-system
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+cd yogyakarta-travel-recommender
+python -m venv venv
+venv\Scripts\activate        # Windows
+# source venv/bin/activate   # Linux/Mac
 ```
 
-2. **Install dependencies**
+### 2. Install dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
-3. **Configure environment**
+### 3. Konfigurasi environment
+
 ```bash
 cp .env.example .env
-# Edit .env dengan API keys dan Neo4j connection
 ```
 
-4. **Start Neo4j**
-```bash
-# Via Docker
-docker run --publish=7474:7474 --publish=7687:7687 \
-  -e NEO4J_AUTH=neo4j/password \
-  neo4j:latest
+Edit `.env` minimal dengan:
 
-# Atau gunakan Neo4j Desktop / Neo4j Aura
+```env
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USERNAME=neo4j
+NEO4J_PASSWORD=your_password
+OPENROUTER_API_KEY=your_openrouter_key
 ```
 
-5. **Data Collection (Optional - use provided sample data)**
-```bash
-python scripts/01_collect_data.py --region yogyakarta
-```
-
-6. **Import data ke Neo4j**
-```bash
-python scripts/02_import_to_neo4j.py
-```
-
-7. **Generate sample itinerary**
-```bash
-python scripts/03_generate_itinerary_demo.py
-```
-
-## 📂 Project Structure
-
-```
-itinerary-recommendation-system/
-├── config/                          # Configuration files
-│   ├── settings.py
-│   └── __init__.py
-├── data/
-│   ├── raw/                        # Raw data dari APIs
-│   │   ├── wikidata/
-│   │   ├── osm/
-│   │   └── google_places/
-│   ├── processed/                  # Cleaned final CSVs
-│   │   ├── destinations.csv
-│   │   ├── restaurants.csv
-│   │   └── ...
-│   └── neo4j_imports/              # Cypher import scripts
-├── src/
-│   ├── data_collection/            # Data extraction modules
-│   ├── database/                   # Neo4j client & queries
-│   ├── rag/                        # RAG pipeline
-│   ├── optimization/               # Itinerary optimization
-│   ├── generation/                 # Output generation
-│   └── api/                        # FastAPI endpoints
-├── scripts/
-│   ├── 01_collect_data.py
-│   ├── 02_import_to_neo4j.py
-│   └── 03_generate_itinerary_demo.py
-├── notebooks/
-│   └── 01_eda_destinations.ipynb   # Exploratory notebooks
-├── tests/
-│   ├── unit/
-│   └── integration/
-├── docker/
-│   └── docker-compose.yml
-└── README.md
-```
-
-## 🔄 Data Pipeline
-
-### Phase 1: Data Collection
-- Wikidata SPARQL untuk destinations awal
-- OpenStreetMap Overpass untuk POIs
-- Google Places untuk ratings & metadata
-- BMKG API untuk weather
-
-### Phase 2: Data Processing
-- Deduplication (fuzzy matching)
-- Coordinate validation
-- Format normalization
-- Data quality scoring
-
-### Phase 3: Neo4j Graph
-- Load CSVs via Cypher
-- Create nodes & relationships
-- Index optimization
-
-### Phase 4: RAG Pipeline
-- Constraint extraction (LLM nvidia)
-- Graph retrieval (Neo4j Cypher)
-- Itinerary generation (LLM nvidia)
-
-## 🎓 Usage Examples
-
-### Example 1: 3-day Cultural Journey
+### 4. Import data ke Neo4j
 
 ```bash
-python scripts/03_generate_itinerary_demo.py
+python scripts/01_process_data.py     # proses CSV sumber
+python scripts/02_import_to_neo4j.py  # import ke Neo4j
 ```
 
-Input:
-```
-Buatkan itinerary 3 hari di Yogyakarta untuk budget medium, 
-suka budaya dan kuliner, pace santai.
-```
-
-Output:
-```markdown
-# Itinerary Yogyakarta, 3 Hari
-
-## Summary
-- Duration: 3 hari
-- Total Budget: Rp 2,000,000
-- Pace: Slow (2-3 destinasi/hari)
-- Group: Individual
-
-## Day 1: 15 Juli 2024
-### Weather: Partly Cloudy, 31°C
-
-| Time | Activity | Duration | Cost | Notes |
-|------|----------|----------|------|-------|
-| 08:00 | Visit Borobudur Temple | 120 min | Rp 50-100k | Rating: 4.7/5, Open 06:00-17:00 |
-| 10:30 | Travel to site | 45 min | - | 42.5 km via car |
-| ... | ... | ... | ... | ... |
-```
-
-### Example 2: API Usage (Future)
-
-```python
-import requests
-
-response = requests.post("http://localhost:8000/generate-itinerary", json={
-    "user_message": "3 hari di Bali, budget medium, suka pantai"
-})
-
-print(response.json())
-```
-
-## 🔍 Key Features
-
-✅ **Graph-Based Retrieval**: Menggunakan Neo4j untuk relation traversal
-✅ **Multi-source Data**: Wikidata, OSM, Google Places, BMKG terintegrasi
-✅ **Constraint Validation**: Respect user preferences (budget, pace, interests)
-✅ **No Hallucination**: LLM hanya generate dari graph context
-✅ **Source Attribution**: Setiap data point ada source-nya
-✅ **Alternative Suggestions**: Multiple itineraries dengan berbagai pace
-
-## ⚠️ Important Notes
-
-### Data Accuracy
-- Data dari berbagai sources mungkin ada perbedaan
-- Selalu verify sebelum kunjungan
-- Rating disimpan dengan source info (Google)
-
-### API Rate Limits
-- Google Places: ~100 req/min
-- Wikidata SPARQL: Bisa handle batch queries
-
-### Geographic Scope (MVP)
-- MVP fokus pada **Yogyakarta region** saja
-
-## 🧪 Testing
+### 5. Jalankan
 
 ```bash
-# Unit tests
-pytest tests/unit/ -v
-
-# Integration tests
-pytest tests/integration/ -v
-
-# Coverage report
-pytest --cov=src tests/
+python scripts/run.py
 ```
 
-## 📊 Sample Data
+## Cara Penggunaan
 
-Project includes sample CSV files untuk testing:
-- `data/processed/destinations.csv` - 5 Yogyakarta attractions
-- `data/processed/restaurants.csv` - 5 restaurants
-- `data/processed/destination_connections.csv` - Routes
+### Mode Conversational (default)
 
-Untuk production data, jalankan:
 ```bash
-python scripts/01_collect_data.py --region yogyakarta
+python scripts/run.py
 ```
 
-## 🐛 Troubleshooting
+Sistem deteksi intent otomatis — tidak perlu pilih menu:
 
-### Neo4j Connection Error
 ```
-Error: Failed to connect to Neo4j
+Anda: Mau ke Yogyakarta 3 hari, suka kuliner dan budaya, budget medium
+→ [Generate Itinerary]
+
+Anda: Museum apa saja di Yogyakarta dengan rating di atas 4?
+→ [Text-to-Cypher]
+
+Anda: Tambah data: Pantai Parangtritis adalah pantai terkenal di Yogyakarta...
+→ [LLM Graph Builder]
 ```
-**Solution**: Pastikan Neo4j running dan credentials di .env benar
+
+### Mode CLI Langsung
+
 ```bash
-docker ps  # Check if container running
-# Or check Neo4j Aura connection string
+# Generate itinerary
+python scripts/run.py "Buatkan itinerary 2 hari di Yogyakarta, suka alam, budget hemat"
+
+# Tanya graph
+python scripts/run.py --query "Restoran halal terdekat dari Prambanan?"
+
+# Tambah data ke graph
+python scripts/run.py --add "Kebun Buah Mangunan adalah wisata alam di Bantul..."
 ```
 
-### API Key Not Found
-```
-Error: API_KEY not found
-```
-**Solution**: Copy .env.example ke .env dan fill API keys
+### Demo Scripts
+
 ```bash
-cp .env.example .env
-# Edit .env dengan actual API keys
+python scripts/03_generate_itinerary_demo.py  # demo itinerary
+python scripts/04_text_to_cypher_demo.py      # demo 5 pertanyaan Text-to-Cypher
+python scripts/05_graph_builder_demo.py       # demo ekstrak artikel ke Neo4j
 ```
 
-### CSV Import Error
-```
-FileNotFoundError: data/processed/destinations.csv
-```
-**Solution**: Run data collection script atau gunakan sample data yang provided
+## Sumber Data
 
-## 📚 Documentation
+Data wisata Yogyakarta diperoleh dengan scraping Google Maps menggunakan [google-maps-scraper](https://github.com/gosom/google-maps-scraper), kemudian disimpan sebagai `data/wisata_jogja_clean.csv`.
 
-- `docs/ARCHITECTURE.md` - Detailed system architecture
-- `docs/DATA_SOURCES.md` - Data source documentation
-- `docs/SETUP.md` - Detailed setup guide
-- `docs/API_DOCUMENTATION.md` - API endpoint documentation
+Hasil scraping diproses oleh `scripts/01_process_data.py` menjadi tiga file di `data/processed/`:
+
+| File | Isi |
+|------|-----|
+| `data/processed/destinations.csv` | Destinasi wisata Yogyakarta |
+| `data/processed/restaurants.csv` | Restoran |
+| `data/processed/destination_connections.csv` | Rute antar destinasi |
+
+File processed inilah yang kemudian diimport ke Neo4j via `scripts/02_import_to_neo4j.py`.
+
+## Troubleshooting
+
+**Neo4j connection error**
+```
+Gagal konek ke Neo4j: ...
+```
+Pastikan Neo4j running dan kredensial di `.env` benar. Database harus bernama `itinerary`.
+
+**API key error**
+```
+Error: OPENROUTER_API_KEY not found
+```
+Salin `.env.example` ke `.env` dan isi API key OpenRouter.
+
+**0 destinasi ditemukan**
+```
+WARNING: 0 destinasi — jalankan scripts/02_import_to_neo4j.py terlebih dahulu.
+```
+Jalankan `scripts/02_import_to_neo4j.py` untuk mengisi database Neo4j.

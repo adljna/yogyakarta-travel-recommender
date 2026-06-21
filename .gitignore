@@ -8,46 +8,26 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
-.Python
-env/
 venv/
+env/
 ENV/
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-pip-wheel-metadata/
-share/python-wheels/
 *.egg-info/
-.installed.cfg
 *.egg
 MANIFEST
 
-# IDE
+# IDE & Tools
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+.claude/
+
+# OS
 .DS_Store
-
-# Jupyter
-.ipynb_checkpoints/
-*.ipynb_checkpoints
-
-# Data
-data/raw/**/*.csv
-data/raw/**/*.json
-!data/raw/.gitkeep
-!data/processed/.gitkeep
+Thumbs.db
 
 # Output
 output_itinerary.md
@@ -62,14 +42,3 @@ neo4j.dump
 .pytest_cache/
 .coverage
 htmlcov/
-.tox/
-
-# IDE settings
-.vscode/settings.json
-.idea/workspace.xml
-
-# OS
-.DS_Store
-Thumbs.db
-
-.claude/

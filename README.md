@@ -202,17 +202,15 @@ Dalam pengembangan proyek ini, AI digunakan sebagai alat bantu untuk mempercepat
 | `src/rag/constraint_extractor.py`        | Membantu membuat struktur ekstraksi preferensi user dari input natural language                                          | Penyesuaian keyword, kategori constraint, dan pengujian terhadap beberapa variasi input                  |
 | `src/graph_builder/llm_graph_builder.py` | Membantu membuat draft pipeline ekstraksi entitas dan relasi dari teks bebas                                             | Penyesuaian format entitas, relationship, serta validasi sebelum data dimasukkan ke Neo4j                |
 
-### Contoh Penggunaan AI
+### Contoh Prompt yang Digunakan
 
-AI digunakan untuk membantu menyusun rancangan awal beberapa komponen, seperti:
+AI digunakan untuk membantu menyusun rancangan awal beberapa komponen, melalui prompt:
 
-> Membantu membuat struktur class untuk mengubah pertanyaan natural language menjadi query Cypher berdasarkan schema Neo4j.
+> "Buat pipeline itinerary: ConstraintExtractor → GraphRetriever → LLMClient, dimana LLM hanya bertugas memformat tabel Markdown, bukan memilih destinasi."
 
-> Membantu merancang entry point program yang dapat membedakan intent user, seperti itinerary, graph query, atau penambahan data.
+> "Buatkan class TextToCypherConverter yang menerima pertanyaan natural language, menggunakan LLM untuk generate Cypher query berdasarkan schema Neo4j, mengeksekusinya, lalu menjelaskan hasilnya dalam Bahasa Indonesia."
 
-> Membantu menyusun pipeline itinerary yang terdiri dari `ConstraintExtractor`, `GraphRetriever`, dan `LLMClient`, dengan pembatasan bahwa LLM hanya digunakan untuk memformat hasil, bukan menentukan destinasi.
-
-### Kontribusi Manual Pengembang
+### Modifikasi Manual
 
 Beberapa bagian penting tetap dikerjakan dan divalidasi secara manual, yaitu:
 

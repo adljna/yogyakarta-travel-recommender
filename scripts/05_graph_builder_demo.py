@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 """
-Demo: LLM Graph Builder (Tier 4)
-
 Menunjukkan bagaimana LLM mengekstrak entitas & relasi dari teks tidak
 terstruktur (artikel blog, ulasan wisata) dan menyimpannya ke Neo4j.
 
@@ -25,7 +23,7 @@ logging.basicConfig(level=logging.WARNING, format="%(levelname)s - %(message)s")
 
 BANNER = """
 ╔══════════════════════════════════════════════════════╗
-║   LLM Graph Builder Demo  (Tier 4)                  ║
+║   LLM Graph Builder Demo                    ║
 ║   Teks Bebas → Entitas & Relasi → Neo4j Graph        ║
 ╚══════════════════════════════════════════════════════╝
 """

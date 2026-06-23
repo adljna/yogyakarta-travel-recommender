@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Conversational Travel Recommender — Yogyakarta (Tier 4).
+Conversational Travel Recommender — Yogyakarta.
 
 Tidak perlu pilih mode — cukup ketik apa yang kamu mau:
   • Ceritakan rencana perjalanan  → sistem buat itinerary otomatis
@@ -198,7 +198,6 @@ def _handle_add_data(text: str):
 
 # ──────────────────────────────────────────────
 # Conversational loop (default)
-# ──────────────────────────────────────────────
 
 def conversational_loop():
     """
@@ -235,10 +234,7 @@ def conversational_loop():
 
         print()
 
-
-# ──────────────────────────────────────────────
 # Standalone mode functions (untuk --query / --add flags dan demo scripts)
-# ──────────────────────────────────────────────
 
 def mode_text_to_cypher(question: str = None):
     """Dipakai oleh flag --query dan scripts/05_text_to_cypher_demo.py."""
@@ -311,10 +307,7 @@ def mode_graph_builder(text: str = None):
 
     neo4j.close()
 
-
-# ──────────────────────────────────────────────
 # Main
-# ──────────────────────────────────────────────
 
 def main():
     print(BANNER)

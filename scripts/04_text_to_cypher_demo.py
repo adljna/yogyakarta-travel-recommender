@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 """
-Demo: Text-to-Cypher (Tier 4)
-
 Menunjukkan bagaimana LLM mengubah pertanyaan natural language
 menjadi Cypher query, mengeksekusinya ke Neo4j, dan menjelaskan hasilnya.
 
@@ -23,7 +21,7 @@ logging.basicConfig(level=logging.WARNING, format="%(levelname)s - %(message)s")
 
 BANNER = """
 ╔══════════════════════════════════════════════════╗
-║   Text-to-Cypher Demo  (Tier 4)                 ║
+║   Text-to-Cypher Demo                  ║
 ║   Natural Language → Cypher → Neo4j → Jawaban   ║
 ╚══════════════════════════════════════════════════╝
 """

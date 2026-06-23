@@ -183,6 +183,48 @@ Hasil scraping diproses oleh `scripts/01_process_data.py` menjadi tiga file di `
 
 File processed inilah yang kemudian diimport ke Neo4j via `scripts/02_import_to_neo4j.py`.
 
+## Penggunaan AI dalam Pengembangan
+
+Dalam pengembangan proyek ini, AI digunakan sebagai alat bantu untuk mempercepat proses implementasi, terutama pada tahap penyusunan struktur awal kode, refactoring, dan penyusunan draft beberapa komponen. Seluruh hasil yang dibantu AI tetap diperiksa, disesuaikan, diintegrasikan, dan diuji secara manual agar sesuai kebutuhan dan schema Neo4j yang digunakan.
+
+| Aspek            | Detail                                                                                                             |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Tool             | Claude Code                                                                                                        |
+| Model            | Claude Sonnet                                                                                                      |
+
+### Area yang Mendapat Bantuan AI
+
+| File                                     | Bentuk Bantuan AI                                                                                                        | Modifikasi dan Validasi Manual                                                                           |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| `src/rag/text_to_cypher.py`              | Membantu menyusun struktur awal class `TextToCypherConverter` untuk mengubah input natural language menjadi query Cypher | Penyesuaian `GRAPH_SCHEMA`, validasi query Cypher, dan pengujian hasil terhadap database Neo4j aktual    |
+| `src/rag/llm_client.py`                  | Membantu membuat struktur client LLM untuk menghasilkan penjelasan itinerary dalam format Markdown                       | Tuning system prompt, pembatasan peran LLM agar hanya memformat jawaban, serta penyesuaian format output |
+| `src/rag/graph_retriever.py`             | Membantu menyusun fungsi retrieval data dari Neo4j berdasarkan constraint user                                           | Penyesuaian logic query, filtering destinasi, dan validasi hasil retrieval                               |
+| `src/rag/constraint_extractor.py`        | Membantu membuat struktur ekstraksi preferensi user dari input natural language                                          | Penyesuaian keyword, kategori constraint, dan pengujian terhadap beberapa variasi input                  |
+| `src/graph_builder/llm_graph_builder.py` | Membantu membuat draft pipeline ekstraksi entitas dan relasi dari teks bebas                                             | Penyesuaian format entitas, relationship, serta validasi sebelum data dimasukkan ke Neo4j                |
+
+### Contoh Penggunaan AI
+
+AI digunakan untuk membantu menyusun rancangan awal beberapa komponen, seperti:
+
+> Membantu membuat struktur class untuk mengubah pertanyaan natural language menjadi query Cypher berdasarkan schema Neo4j.
+
+> Membantu merancang entry point program yang dapat membedakan intent user, seperti itinerary, graph query, atau penambahan data.
+
+> Membantu menyusun pipeline itinerary yang terdiri dari `ConstraintExtractor`, `GraphRetriever`, dan `LLMClient`, dengan pembatasan bahwa LLM hanya digunakan untuk memformat hasil, bukan menentukan destinasi.
+
+### Kontribusi Manual Pengembang
+
+Beberapa bagian penting tetap dikerjakan dan divalidasi secara manual, yaitu:
+
+* Merancang dan menyesuaikan schema graph sesuai kebutuhan
+* Menentukan struktur node, relationship, dan constraint data
+* Menguji dan memperbaiki query Cypher yang dihasilkan
+* Mengatur prompt agar jawaban LLM tetap berbasis data dari graph
+* Mengintegrasikan pipeline antar komponen pada `scripts/run.py`
+* Melakukan debugging dan pengujian alur program
+* Memvalidasi output itinerary dan hasil query agar sesuai dengan data yang tersedia
+
+
 ## Troubleshooting
 
 **Neo4j connection error**

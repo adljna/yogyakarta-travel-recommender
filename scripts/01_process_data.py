@@ -356,7 +356,7 @@ def main():
     logger.info(f"Saved → {dest_out}")
     logger.info(f"Saved → {rest_out}")
     logger.info(f"Saved → {conn_out}")
-    logger.info("Done! Siap untuk 03_import_to_neo4j.py")
+    logger.info("Done! Siap untuk 02_import_to_neo4j.py")
 
 
 if __name__ == "__main__":
